@@ -1,0 +1,15 @@
+<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>مشاركة موقعي باختياري</title>
+<style>body{font:18px Arial;background:#122033;color:white;max-width:620px;margin:30px auto;padding:16px;line-height:1.8}.panel{background:#233b57;padding:22px;border-radius:16px}button{padding:13px;margin:6px;border:0;border-radius:10px;background:#66c8f3;font-size:16px}button:disabled{opacity:.4}small{color:#d1d8e4}</style>
+<div class="panel"><h2>مشاركة موقعي باختياري</h2><p>لن يتم طلب موقعك أو مشاركته إلا إذا اخترت ذلك. لا تُرسل هذه الصفحة إحداثياتك لأي خادم، ولن تتابع تحركاتك.</p><button id="locate">أوافق على تحديد موقعي</button><button id="share" disabled>إرسال موقعي بنفسي</button><button id="stop">مسح الموقع</button><p id="status" role="status">لم تطلب مشاركة الموقع.</p><small>عند الضغط على إرسال، ستظهر خيارات المشاركة على جهازك. لن تُرسل البيانات إلا بعد اختيار المستلم وتأكيد الإرسال. الرابط المرسل يفتح Google Maps.</small></div>
+<script>
+let coords=null;const status=document.getElementById('status'),share=document.getElementById('share');
+function clear(){coords=null;share.disabled=true;status.textContent='تم مسح الموقع من الصفحة.'}
+document.getElementById('stop').onclick=clear;
+document.getElementById('locate').onclick=()=>{
+ if(!window.isSecureContext){status.textContent='تحديد الموقع يتطلب HTTPS.';return}
+ if(!navigator.geolocation){status.textContent='المتصفح لا يدعم GPS.';return}
+ status.textContent='بانتظار موافقتك من المتصفح...';
+ navigator.geolocation.getCurrentPosition(p=>{coords={lat:p.coords.latitude,lon:p.coords.longitude};share.disabled=false;status.textContent='تم تحديد الموقع بدقة تقريبية '+Math.round(p.coords.accuracy)+' متر. يمكنك اختيار إرساله الآن.'},e=>{clear();status.textContent='لم يتم تحديد الموقع: '+e.message},{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+};
+share.onclick=async()=>{if(!coords)return;const url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(coords.lat+','+coords.lon);if(navigator.share){try{await navigator.share({title:'موقعي الذي اخترت مشاركته',url});status.textContent='تم فتح واجهة المشاركة. يمكنك اختيار المستلم.'}catch(e){status.textContent='تم إلغاء المشاركة أو تعذرت.'}}else{try{await navigator.clipboard.writeText(url);status.textContent='تم نسخ رابط موقعك. الصقه بنفسك في المحادثة التي تختارها.'}catch(e){status.textContent='تعذر النسخ. افتح الصفحة في متصفح يدعم المشاركة.'}}};
+</script></html>
